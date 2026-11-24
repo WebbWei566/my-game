@@ -63,3 +63,23 @@ export const TECHNIQUES: Technique[] = [
 
 const MAP = new Map(TECHNIQUES.map((t) => [t.id, t]))
 export const techById = (id: string): Technique => MAP.get(id) ?? TECHNIQUES[0]
+
+/** 藏經閣兌換價格（妖丹） */
+export const techPrice = (t: Technique) => [0, 0, 6, 15, 40, 120][t.grade]
+
+/** 把功法加成轉成可讀文字 */
+export function techEffectText(t: Technique): string[] {
+  const out: string[] = []
+  const pct = (x: number) => `${x > 0 ? '+' : ''}${Math.round(x * 100)}%`
+  if (t.speed) out.push(`修煉 ×${t.speed}`)
+  if (t.tap) out.push(`打坐 ×${t.tap}`)
+  if (t.offline) out.push(`離線 ${pct(t.offline)}`)
+  if (t.breakMajor) out.push(`渡劫 ${pct(t.breakMajor)}`)
+  if (t.alchemy) out.push(`煉丹 ${pct(t.alchemy)}`)
+  if (t.atk) out.push(`攻擊 ×${t.atk}`)
+  if (t.def) out.push(`防禦 ×${t.def}`)
+  if (t.hp) out.push(`氣血 ×${t.hp}`)
+  for (const [root, m] of Object.entries(t.rootBonus ?? {})) out.push(`${root === 'mixed' ? '雜靈根' : root} ×${m}`)
+  if (t.skill) out.push(`武技「${t.skill.name}」`)
+  return out.length ? out : ['無特殊加成']
+}

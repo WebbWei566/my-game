@@ -9,6 +9,7 @@ import SettingsPanel from './components/SettingsPanel.vue'
 import TabBar from './components/TabBar.vue'
 import CultivateView from './views/CultivateView.vue'
 import BagView from './views/BagView.vue'
+import TechniquesView from './views/TechniquesView.vue'
 
 const g = useGame()
 g.init()
@@ -33,6 +34,7 @@ const showSettings = ref(false)
           <button class="icon" aria-label="設定" @click="showSettings = true">⚙</button>
         </header>
         <CultivateView v-if="g.tab === 'cultivate'" />
+        <TechniquesView v-else-if="g.tab === 'techniques'" />
         <BagView v-else-if="g.tab === 'bag'" />
       </template>
     </main>

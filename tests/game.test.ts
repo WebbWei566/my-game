@@ -137,3 +137,34 @@ describe('存檔', () => {
     expect(d.stage).toBe(5)
   })
 })
+
+describe('功法', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('主修需達境界，切換後修煉速度改變', () => {
+    const g = fresh()
+    g.learnTechnique('t_qingyuan')
+    expect(g.setMainTech('t_qingyuan')).toBe(false) // 境界不足
+    g.p.stage = 2
+    const before = g.perSec
+    expect(g.setMainTech('t_qingyuan')).toBe(true)
+    expect(g.perSec).toBeCloseTo(before * 1.2)
+  })
+
+  it('五行歸元經對雜靈根有額外加成', () => {
+    const g = fresh()
+    g.p.rootId = 'mixed'; g.p.stage = 4
+    g.learnTechnique('t_wuxing'); g.setMainTech('t_wuxing')
+    expect(g.speedMult).toBeCloseTo(0.8 * 1.25 * 1.4)
+  })
+
+  it('藏經閣扣妖丹兌換功法，不足時失敗', () => {
+    const g = fresh()
+    expect(g.buyTechnique('t_qingyuan')).toBe(false)
+    g.addItem('mat_yaodan', 10)
+    expect(g.buyTechnique('t_qingyuan')).toBe(true)
+    expect(g.p.techniques).toContain('t_qingyuan')
+    expect(g.count('mat_yaodan')).toBe(4)
+    expect(g.buyTechnique('t_qingyuan')).toBe(false) // 不能重複購買
+  })
+})

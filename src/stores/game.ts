@@ -4,7 +4,7 @@ import { SAVE_VERSION, loadSave, writeSave, clearSave, exportCode, importCode, t
 import { defaultPlayer, normalize, type PlayerState } from '../core/player'
 import { stageInfo, MAX_STAGE } from '../data/realms'
 import { rollRoot, rootById } from '../data/spiritRoots'
-import { techById } from '../data/techniques'
+import { techById, techPrice } from '../data/techniques'
 import { itemById } from '../data/items'
 import { EVENTS, type GameEvent, type EventEffect } from '../data/events'
 
@@ -105,6 +105,27 @@ export const useGame = defineStore('game', {
       if (this.p.techniques.includes(id)) return false
       this.p.techniques.push(id)
       this.addLog(`習得功法《${techById(id).name}》！`, 'good')
+      return true
+    },
+
+    /** 切換主修功法 */
+    setMainTech(id: string): boolean {
+      const t = techById(id)
+      if (!this.p.techniques.includes(id) || this.p.stage < t.minStage) return false
+      this.p.mainTech = id
+      this.addLog(`改為主修《${t.name}》。`, 'info')
+      this.save()
+      return true
+    },
+
+    /** 藏經閣：以妖丹兌換功法 */
+    buyTechnique(id: string): boolean {
+      const t = techById(id)
+      if (this.p.techniques.includes(id)) return false
+      if (!this.takeItems({ mat_yaodan: techPrice(t) })) return false
+      this.learnTechnique(id)
+      this.stat('techBought')
+      this.save()
       return true
     },
 
