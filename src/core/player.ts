@@ -4,6 +4,8 @@ import type { BattleState } from './battle'
 
 export interface Buff { id: string; mult: number; until: number }
 
+export interface Plot { herb: string; plantedAt: number; readyAt: number }
+
 export interface DungeonRun {
   dungeonId: string
   map: DungeonMap
@@ -31,6 +33,8 @@ export interface PlayerState {
   run: DungeonRun | null
   /** 轉世次數 */
   rebirths: number
+  /** 靈田：每格為種植中的靈草或 null */
+  plots: (Plot | null)[]
   lastSaved: number
   createdAt: number
 }
@@ -51,6 +55,7 @@ export function defaultPlayer(now = Date.now()): PlayerState {
     flags: {},
     run: null,
     rebirths: 0,
+    plots: [],
     lastSaved: now,
     createdAt: now,
   }
@@ -66,6 +71,7 @@ export function normalize(raw: Partial<PlayerState>): PlayerState {
   p.techniques = [...(raw.techniques ?? d.techniques)]
   p.buffs = [...(raw.buffs ?? [])]
   p.achievements = [...(raw.achievements ?? [])]
+  p.plots = [...(raw.plots ?? [])]
   if (!p.techniques.includes('t_tuna')) p.techniques.unshift('t_tuna')
   if (!p.techniques.includes(p.mainTech)) p.mainTech = 't_tuna'
   return p

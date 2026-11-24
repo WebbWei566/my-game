@@ -353,3 +353,40 @@ describe('數字格式', () => {
     expect(fmt(1.5e8)).toBe('1.50億')
   })
 })
+
+describe('靈田', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+  afterEach(() => vi.restoreAllMocks())
+
+  it('種植扣種子、未成熟不能收、成熟後收成 2~4 株', () => {
+    const g = fresh()
+    g.p.inventory = { herb_lingcao: 1 }
+    expect(g.plotList).toHaveLength(2)
+    expect(g.plant(0, 'herb_lingcao')).toBe(true)
+    expect(g.count('herb_lingcao')).toBe(0)
+    expect(g.plant(1, 'herb_lingcao')).toBe(false) // 沒種子
+    expect(g.harvest(0)).toBe(0)
+    const t = Date.now()
+    vi.spyOn(Date, 'now').mockReturnValue(t + BALANCE.growSec[1] * 1000 + 1)
+    const n = g.harvest(0)
+    expect(n).toBeGreaterThanOrEqual(2)
+    expect(n).toBeLessThanOrEqual(4)
+    expect(g.count('herb_lingcao')).toBe(n)
+    expect(g.plotList[0]).toBeNull()
+  })
+
+  it('格數隨境界增加、超出格數不能種', () => {
+    const g = fresh()
+    g.p.inventory = { herb_lingcao: 5 }
+    expect(g.plant(2, 'herb_lingcao')).toBe(false)
+    g.p.stage = 8
+    expect(g.plotList).toHaveLength(4)
+    expect(g.plant(2, 'herb_lingcao')).toBe(true)
+  })
+
+  it('非靈草不能種', () => {
+    const g = fresh()
+    g.addItem('pill_juqi', 1)
+    expect(g.plant(0, 'pill_juqi')).toBe(false)
+  })
+})

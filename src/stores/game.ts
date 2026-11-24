@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { BALANCE, requiredFor, gainPerSec, breakthroughChance, fmt, fmtDuration, rebirthSpeed, rebirthCombat } from '../core/formulas'
+import { BALANCE, requiredFor, gainPerSec, breakthroughChance, fmt, fmtDuration, rebirthSpeed, rebirthCombat, plotCount } from '../core/formulas'
 import { SAVE_VERSION, loadSave, writeSave, clearSave, exportCode, importCode, type SaveData } from '../core/save'
-import { defaultPlayer, normalize, type PlayerState } from '../core/player'
+import { defaultPlayer, normalize, type PlayerState, type Plot } from '../core/player'
 import { stageInfo, MAX_STAGE } from '../data/realms'
 import { rollRoot, rootById } from '../data/spiritRoots'
 import { techById, techPrice, DEFAULT_SKILL } from '../data/techniques'
@@ -75,6 +75,8 @@ export const useGame = defineStore('game', {
       })
     },
     count: (s) => (id: string) => s.p.inventory[id] ?? 0,
+    /** 靈田（依境界顯示的格數，空格為 null） */
+    plotList: (s): (Plot | null)[] => Array.from({ length: plotCount(s.p.stage) }, (_, i) => s.p.plots[i] ?? null),
     combat(): ReturnType<typeof playerStats> {
       const r = rebirthCombat(this.p.rebirths)
       const t = this.tech
@@ -177,6 +179,33 @@ export const useGame = defineStore('game', {
       this.stat('gathers')
       this.save()
       return got
+    },
+
+    // ───────── 靈田 ─────────
+
+    /** 以一株靈草為種，種在第 i 格 */
+    plant(i: number, herbId: string): boolean {
+      const it = itemById(herbId)
+      if (it.kind !== 'herb' || i >= plotCount(this.p.stage) || this.p.plots[i] || this.count(herbId) <= 0) return false
+      this.addItem(herbId, -1)
+      const now = Date.now()
+      this.p.plots[i] = { herb: herbId, plantedAt: now, readyAt: now + BALANCE.growSec[it.rarity] * 1000 }
+      this.stat('planted')
+      this.save()
+      return true
+    },
+
+    harvest(i: number): number {
+      const plot = this.p.plots[i]
+      if (!plot || Date.now() < plot.readyAt) return 0
+      const n = BALANCE.harvestMin + Math.floor(Math.random() * (BALANCE.harvestMax - BALANCE.harvestMin + 1))
+      this.addItem(plot.herb, n)
+      this.p.plots[i] = null
+      this.stat('harvested', n)
+      this.addLog(`靈田收成：${itemById(plot.herb).name}×${n}`, 'good')
+      play('coin')
+      this.save()
+      return n
     },
 
     canCraft(recipeId: string): boolean {

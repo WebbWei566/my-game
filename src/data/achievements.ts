@@ -28,6 +28,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'a_tap1', name: '勤修不輟', icon: '🧘', desc: '打坐 500 次', progress: stat('taps', 500), reward: { pill_juqi: 2 } },
   { id: 'a_tap2', name: '坐忘', icon: '🪷', desc: '打坐 5000 次', progress: stat('taps', 5000), reward: { pill_wuxin: 2 } },
   { id: 'a_gather', name: '採藥郎', icon: '🌿', desc: '採藥 20 次', progress: stat('gathers', 20), reward: { herb_zhuguo: 3 } },
+  { id: 'a_farm', name: '靈田主人', icon: '🌾', desc: '靈田累計收成 30 株', progress: stat('harvested', 30), reward: { herb_xuanbing: 2 } },
   { id: 'a_craft1', name: '初窺丹道', icon: '⚗', desc: '成功煉製 1 枚丹藥', progress: stat('craftSuccess', 1), reward: { herb_lingcao: 5 } },
   { id: 'a_craft2', name: '丹道宗師', icon: '🔥', desc: '成功煉製 50 枚丹藥', progress: stat('craftSuccess', 50), reward: { herb_xuanbing: 3 } },
   { id: 'a_kill1', name: '斬妖除魔', icon: '⚔', desc: '擊敗 10 隻妖獸', progress: stat('kills', 10), reward: { pill_huichun: 3 } },

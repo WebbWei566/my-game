@@ -16,6 +16,10 @@ export const BALANCE = {
   gatherSec: 300,
   gatherMax: 5,
   failLossPct: 0.3,
+  /** 靈田：各稀有度生長秒數、收成數量 */
+  growSec: { 1: 600, 2: 1800, 3: 3600, 4: 10800, 5: 21600 } as Record<number, number>,
+  harvestMin: 2,
+  harvestMax: 4,
   /** 平均幾秒觸發一次奇遇 */
   eventIntervalSec: 90,
 }
@@ -54,3 +58,6 @@ export function fmtDuration(sec: number) {
 /** 轉世永久加成 */
 export const rebirthSpeed = (n: number) => 1 + 0.5 * n
 export const rebirthCombat = (n: number) => 1 + 0.25 * n
+
+/** 靈田格數：初始 2 格，每個大境界 +1，最多 6 格 */
+export const plotCount = (stage: number) => Math.min(6, 2 + Math.floor(stage / 4))

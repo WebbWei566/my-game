@@ -6,6 +6,7 @@ import { RECIPES, craftChance, FIRE_LABEL, type FireResult, type Recipe } from '
 import { itemById, RARITY_NAME } from '../data/items'
 import { stageInfo } from '../data/realms'
 import FireControl from '../components/FireControl.vue'
+import SpiritField from '../components/SpiritField.vue'
 
 const g = useGame()
 const brewing = ref<Recipe | null>(null)
@@ -40,6 +41,8 @@ function onFire(fire: FireResult) {
     </div>
     <button class="btn sm" :disabled="g.p.gatherCharges <= 0" @click="g.gather()">採藥</button>
   </section>
+
+  <SpiritField />
 
   <p v-if="lastResult" class="result">{{ lastResult }}</p>
 
