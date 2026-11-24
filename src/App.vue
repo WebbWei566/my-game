@@ -7,6 +7,7 @@ import Tribulation from './components/Tribulation.vue'
 import EventModal from './components/EventModal.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import AchievementsPanel from './components/AchievementsPanel.vue'
+import DailyPanel from './components/DailyPanel.vue'
 import TabBar from './components/TabBar.vue'
 import ToastHost from './components/ToastHost.vue'
 import CultivateView from './views/CultivateView.vue'
@@ -19,6 +20,7 @@ const g = useGame()
 g.init()
 const showSettings = ref(false)
 const showAch = ref(false)
+const showDaily = ref(false)
 </script>
 
 <template>
@@ -37,6 +39,7 @@ const showAch = ref(false)
             <div class="sub"><template v-if="g.p.rebirths">第{{ g.p.rebirths + 1 }}世．</template>{{ g.root.name }}．《{{ g.tech.name }}》．每秒 {{ fmt(g.perSec) }}</div>
           </div>
           <div>
+            <button class="icon" aria-label="每日" @click="showDaily = true">📅<i v-if="g.dailyClaimable" class="dot"></i></button>
             <button class="icon" aria-label="成就" @click="showAch = true">🏆</button>
             <button class="icon" aria-label="設定" @click="showSettings = true">⚙</button>
           </div>
@@ -54,6 +57,7 @@ const showAch = ref(false)
     <Tribulation v-if="g.tribulation" @done="g.finishTribulation" />
     <SettingsPanel v-if="showSettings" @close="showSettings = false" />
     <AchievementsPanel v-if="showAch" @close="showAch = false" />
+    <DailyPanel v-if="showDaily" @close="showDaily = false" />
     <InstallPrompt />
     <ToastHost />
     <button v-if="g.updateReady && !g.tribulation && !g.p.run?.battle" class="update" @click="g.updateReady()">
@@ -75,5 +79,6 @@ header { display: flex; justify-content: space-between; align-items: center; }
 .update { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(72px + env(safe-area-inset-bottom)); z-index: 20;
   font: inherit; font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--gold);
   background: var(--ink); color: var(--paper); box-shadow: 0 4px 12px #0004; white-space: nowrap; }
-.icon { font-size: 22px; background: none; border: none; color: inherit; padding: 8px; }
+.icon { font-size: 22px; background: none; border: none; color: inherit; padding: 8px 6px; position: relative; }
+.dot { position: absolute; top: 6px; right: 2px; width: 8px; height: 8px; border-radius: 50%; background: var(--cinnabar); }
 </style>

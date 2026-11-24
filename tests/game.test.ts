@@ -390,3 +390,46 @@ describe('靈田', () => {
     expect(g.plant(0, 'pill_juqi')).toBe(false)
   })
 })
+
+describe('每日', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+  afterEach(() => vi.restoreAllMocks())
+
+  it('每日任務以當日快照計算進度，完成後可領一次', () => {
+    const g = fresh()
+    g.p.stats.taps = 1000 // 之前累積的不算
+    g.p.daily.date = ''
+    g.checkDaily()
+    const t = { stat: 'taps', target: 100 }
+    expect(g.dailyProgress(t)).toBe(0)
+    expect(g.claimDaily('dt_tap')).toBeNull()
+    g.p.stats.taps += 100
+    expect(g.claimDaily('dt_tap')).not.toBeNull()
+    expect(g.claimDaily('dt_tap')).toBeNull()
+  })
+
+  it('連續簽到累加天數，中斷後重置；同一天只能簽一次', async () => {
+    const { dayKey } = await import('../src/data/daily')
+    const g = fresh()
+    const day = 86400000
+    const t0 = new Date(2026, 0, 10, 12).getTime()
+    g.now = t0
+    expect(g.signIn()).not.toBeNull()
+    expect(g.signIn()).toBeNull()
+    g.now = t0 + day
+    g.signIn()
+    expect(g.p.daily.streak).toBe(2)
+    g.now = t0 + 3 * day // 跳過一天
+    g.signIn()
+    expect(g.p.daily.streak).toBe(1)
+    expect(g.p.daily.signedDate).toBe(dayKey(t0 + 3 * day))
+  })
+
+  it('換日時重置任務領取狀態', () => {
+    const g = fresh()
+    g.p.daily.claimed = ['dt_tap']
+    g.p.daily.date = '2000-01-01'
+    g.checkDaily()
+    expect(g.p.daily.claimed).toEqual([])
+  })
+})

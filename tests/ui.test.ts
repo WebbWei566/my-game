@@ -77,6 +77,12 @@ describe('UI 冒煙測試', () => {
     await w.find('[aria-label="成就"]').trigger('click')
     await nextTick()
     expect(w.text()).toContain('初入仙途')
+    await clickText('關閉')
+    await w.find('[aria-label="每日"]').trigger('click')
+    await nextTick()
+    expect(w.text()).toContain('每日任務')
+    await clickText('簽到')
+    expect(g.p.daily.streak).toBe(1)
     expect(errors).toEqual([])
   })
 

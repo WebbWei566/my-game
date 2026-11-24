@@ -4,6 +4,17 @@ import type { BattleState } from './battle'
 
 export interface Buff { id: string; mult: number; until: number }
 
+export interface DailyState {
+  /** 目前追蹤的日期 YYYY-MM-DD */
+  date: string
+  /** 最後一次簽到日期 */
+  signedDate: string
+  streak: number
+  /** 當日開始時的統計快照 */
+  base: Record<string, number>
+  claimed: string[]
+}
+
 export interface Plot { herb: string; plantedAt: number; readyAt: number }
 
 export interface DungeonRun {
@@ -35,6 +46,7 @@ export interface PlayerState {
   rebirths: number
   /** 靈田：每格為種植中的靈草或 null */
   plots: (Plot | null)[]
+  daily: DailyState
   lastSaved: number
   createdAt: number
 }
@@ -56,6 +68,7 @@ export function defaultPlayer(now = Date.now()): PlayerState {
     run: null,
     rebirths: 0,
     plots: [],
+    daily: { date: '', signedDate: '', streak: 0, base: {}, claimed: [] },
     lastSaved: now,
     createdAt: now,
   }
@@ -72,6 +85,9 @@ export function normalize(raw: Partial<PlayerState>): PlayerState {
   p.buffs = [...(raw.buffs ?? [])]
   p.achievements = [...(raw.achievements ?? [])]
   p.plots = [...(raw.plots ?? [])]
+  p.daily = { ...d.daily, ...(raw.daily ?? {}) }
+  p.daily.base = { ...p.daily.base }
+  p.daily.claimed = [...p.daily.claimed]
   if (!p.techniques.includes('t_tuna')) p.techniques.unshift('t_tuna')
   if (!p.techniques.includes(p.mainTech)) p.mainTech = 't_tuna'
   return p

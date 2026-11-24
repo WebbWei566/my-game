@@ -12,6 +12,7 @@ import { itemById } from '../data/items'
 import { RECIPES, craftChance, rollGather, type FireResult } from '../data/recipes'
 import { play } from '../core/sfx'
 import { ACHIEVEMENTS } from '../data/achievements'
+import { DAILY_TASKS, DAILY_ALL_REWARD, signInReward, dayKey, dayDiff } from '../data/daily'
 import { pickEvent, type GameEvent, type EventEffect, type EventChoice } from '../data/events'
 
 export interface LogLine { id: number; text: string; kind: 'info' | 'good' | 'bad' }
@@ -77,6 +78,16 @@ export const useGame = defineStore('game', {
       })
     },
     count: (s) => (id: string) => s.p.inventory[id] ?? 0,
+    dailyProgress: (s) => (t: { stat: string; target: number }) =>
+      Math.min(t.target, (s.p.stats[t.stat] ?? 0) - (s.p.daily.base[t.stat] ?? 0)),
+    canSignIn: (s) => s.p.daily.signedDate !== dayKey(s.now),
+    /** 有可領取的每日獎勵（用於紅點） */
+    dailyClaimable(): boolean {
+      if (this.canSignIn) return true
+      const done = DAILY_TASKS.filter((t) => this.dailyProgress(t) >= t.target)
+      return done.some((t) => !this.p.daily.claimed.includes(t.id)) ||
+        (done.length === DAILY_TASKS.length && !this.p.daily.claimed.includes('all'))
+    },
     /** 靈田（依境界顯示的格數，空格為 null） */
     plotList: (s): (Plot | null)[] => Array.from({ length: plotCount(s.p.stage) }, (_, i) => s.p.plots[i] ?? null),
     combat(): ReturnType<typeof playerStats> {
@@ -459,6 +470,7 @@ export const useGame = defineStore('game', {
       }
       this.checkAchievements()
       this.checkUnlocks()
+      this.checkDaily()
       if ((saveCounter += dt) > 10) { saveCounter = 0; this.save() }
     },
 
@@ -480,6 +492,55 @@ export const useGame = defineStore('game', {
       if (!this.tabUnlocked(t)) return
       this.tab = t
       delete this.p.flags['new_' + t]
+    },
+
+    grant(items: Record<string, number>): string {
+      for (const [id, n] of Object.entries(items)) this.addItem(id, n)
+      return Object.entries(items).map(([id, n]) => `${itemById(id).name}×${n}`).join('、')
+    },
+
+    /** 換日：重設每日任務快照 */
+    checkDaily() {
+      const today = dayKey(this.now)
+      const d = this.p.daily
+      if (d.date === today) return
+      d.date = today
+      d.base = { ...this.p.stats }
+      d.claimed = []
+      if (this.started && d.signedDate !== today) this.toast('新的一天，記得簽到與完成每日任務', '📅', 4000)
+    },
+
+    signIn(): string | null {
+      const today = dayKey(this.now)
+      const d = this.p.daily
+      if (d.signedDate === today) return null
+      d.streak = d.signedDate && dayDiff(d.signedDate, today) === 1 ? d.streak + 1 : 1
+      d.signedDate = today
+      const text = this.grant(signInReward(d.streak))
+      this.addLog(`簽到第 ${d.streak} 天，獲得 ${text}`, 'good')
+      play('coin')
+      this.save()
+      return text
+    },
+
+    claimDaily(id: string): string | null {
+      const d = this.p.daily
+      if (d.claimed.includes(id)) return null
+      let reward: Record<string, number>
+      if (id === 'all') {
+        if (!DAILY_TASKS.every((t) => this.dailyProgress(t) >= t.target)) return null
+        reward = DAILY_ALL_REWARD
+      } else {
+        const t = DAILY_TASKS.find((x) => x.id === id)
+        if (!t || this.dailyProgress(t) < t.target) return null
+        reward = t.reward
+      }
+      d.claimed.push(id)
+      const text = this.grant(reward)
+      this.addLog(`完成每日任務，獲得 ${text}`, 'good')
+      play('coin')
+      this.save()
+      return text
     },
 
     checkAchievements() {
@@ -545,6 +606,7 @@ export const useGame = defineStore('game', {
       this.p = { ...defaultPlayer(), rootId: root.id }
       this.p.inventory = { herb_lingcao: 3 }
       this.started = true
+      this.checkDaily()
       this.tab = 'cultivate'
       this.log = []
       this.addLog(`測得靈根：${root.name}。${root.desc}`, 'good')
