@@ -118,10 +118,14 @@ describe('UI 冒煙測試', () => {
         await clickText(run.battle.over ? (run.battle.over === 'lose' ? '敗退' : run.battle.foe.kind === 'boss' ? '通關' : '繼續') : '攻擊')
         continue
       }
-      const next = findNode(run.map, run.at).next[0]
+      const prevAt = run.at
+      const reachable = findNode(run.map, prevAt).next
       await w.findAll('.node:not([disabled])')[0].trigger('click')
-      if (g.p.run && g.p.run.at !== next && g.p.run.at === run.at) throw new Error('沒有移動')
       await flushPromises()
+      if (g.p.run) {
+        expect(g.p.run.at).not.toBe(prevAt)
+        expect(reachable).toContain(g.p.run.at)
+      }
     }
     expect(g.p.run).toBeNull()
     expect(w.text()).toContain('通關青狼谷')
