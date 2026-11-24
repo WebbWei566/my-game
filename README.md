@@ -37,3 +37,5 @@ npm run icons    # 修改 public/logo.svg 後重新產生 PWA 圖示
 | `src/stores/game.ts` | 遊戲狀態、主迴圈、離線收益、突破邏輯 |
 | `src/components/` | 渡劫小遊戲、奇遇彈窗、設定、安裝提示 |
 | `.github/workflows/deploy.yml` | GitHub Pages 自動部署 |
+
+完整規劃與進度：[docs/PLAN.md](docs/PLAN.md)
