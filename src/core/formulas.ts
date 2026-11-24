@@ -48,3 +48,7 @@ export function fmtDuration(sec: number) {
   const m = Math.floor((sec % 3600) / 60)
   return h > 0 ? `${h} 小時 ${m} 分` : `${m} 分鐘`
 }
+
+/** 轉世永久加成 */
+export const rebirthSpeed = (n: number) => 1 + 0.5 * n
+export const rebirthCombat = (n: number) => 1 + 0.25 * n

@@ -24,6 +24,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'a_nascent', name: '元嬰老祖', icon: '👶', desc: '踏入元嬰期', progress: stage(12), reward: { pill_dujie: 1 } },
   { id: 'a_spirit', name: '化神真君', icon: '🌌', desc: '踏入化神期', progress: stage(16), reward: { pill_dujie: 1, mat_yaodan: 20 } },
   { id: 'a_ascend', name: '白日飛升', icon: '☁', desc: '修至渡劫圓滿，飛升仙界', progress: stage(MAX_STAGE) },
+  { id: 'a_rebirth', name: '輪迴不滅', icon: '🔄', desc: '轉世一次', progress: (p) => [p.rebirths, 1], reward: { pill_wuxin: 3 } },
   { id: 'a_tap1', name: '勤修不輟', icon: '🧘', desc: '打坐 500 次', progress: stat('taps', 500), reward: { pill_juqi: 2 } },
   { id: 'a_tap2', name: '坐忘', icon: '🪷', desc: '打坐 5000 次', progress: stat('taps', 5000), reward: { pill_wuxin: 2 } },
   { id: 'a_gather', name: '採藥郎', icon: '🌿', desc: '採藥 20 次', progress: stat('gathers', 20), reward: { herb_zhuguo: 3 } },

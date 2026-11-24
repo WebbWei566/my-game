@@ -34,7 +34,7 @@ const showAch = ref(false)
         <header>
           <div>
             <div class="realm">{{ g.info.label }}</div>
-            <div class="sub">{{ g.root.name }}．《{{ g.tech.name }}》．每秒 {{ fmt(g.perSec) }}</div>
+            <div class="sub"><template v-if="g.p.rebirths">第{{ g.p.rebirths + 1 }}世．</template>{{ g.root.name }}．《{{ g.tech.name }}》．每秒 {{ fmt(g.perSec) }}</div>
           </div>
           <div>
             <button class="icon" aria-label="成就" @click="showAch = true">🏆</button>

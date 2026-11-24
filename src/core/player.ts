@@ -29,6 +29,8 @@ export interface PlayerState {
   achievements: string[]
   flags: Record<string, boolean>
   run: DungeonRun | null
+  /** 轉世次數 */
+  rebirths: number
   lastSaved: number
   createdAt: number
 }
@@ -48,6 +50,7 @@ export function defaultPlayer(now = Date.now()): PlayerState {
     achievements: [],
     flags: {},
     run: null,
+    rebirths: 0,
     lastSaved: now,
     createdAt: now,
   }

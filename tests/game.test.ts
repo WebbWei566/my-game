@@ -297,3 +297,25 @@ describe('新手引導', () => {
     expect(g.p.flags.new_dungeon).toBeUndefined()
   })
 })
+
+describe('轉世', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('未飛升不能轉世；轉世後境界歸零、保留功法物品、修煉變快', () => {
+    const g = fresh()
+    expect(g.rebirth()).toBe(false)
+    g.p.stage = MAX_STAGE
+    g.learnTechnique('t_taixu')
+    g.addItem('mat_yaodan', 7)
+    g.p.rootId = 'heaven'
+    const base = g.root.speed
+    expect(g.rebirth()).toBe(true)
+    expect(g.p.stage).toBe(0)
+    expect(g.p.rebirths).toBe(1)
+    expect(g.p.techniques).toContain('t_taixu')
+    expect(g.p.mainTech).toBe('t_tuna')
+    expect(g.count('mat_yaodan')).toBe(7)
+    expect(g.speedMult).toBeCloseTo(g.root.speed * 1.5)
+    expect(base).toBe(2)
+  })
+})

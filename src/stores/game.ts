@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { BALANCE, requiredFor, gainPerSec, breakthroughChance, fmt, fmtDuration } from '../core/formulas'
+import { BALANCE, requiredFor, gainPerSec, breakthroughChance, fmt, fmtDuration, rebirthSpeed, rebirthCombat } from '../core/formulas'
 import { SAVE_VERSION, loadSave, writeSave, clearSave, exportCode, importCode, type SaveData } from '../core/save'
 import { defaultPlayer, normalize, type PlayerState } from '../core/player'
 import { stageInfo, MAX_STAGE } from '../data/realms'
@@ -59,7 +59,7 @@ export const useGame = defineStore('game', {
     buffMult: (s) => s.p.buffs.filter((b) => b.until > s.now).reduce((m, b) => m * b.mult, 1),
     speedMult(): number {
       const t = this.tech
-      return this.root.speed * (t.speed ?? 1) * (t.rootBonus?.[this.p.rootId] ?? 1) * this.buffMult
+      return this.root.speed * (t.speed ?? 1) * (t.rootBonus?.[this.p.rootId] ?? 1) * this.buffMult * rebirthSpeed(this.p.rebirths)
     },
     perSec(): number { return gainPerSec(this.p.stage, this.speedMult) },
     tapGain(): number { return this.perSec * BALANCE.tapSeconds * (this.tech.tap ?? 1) },
@@ -75,7 +75,11 @@ export const useGame = defineStore('game', {
       })
     },
     count: (s) => (id: string) => s.p.inventory[id] ?? 0,
-    combat(): ReturnType<typeof playerStats> { return playerStats(this.p.stage, this.tech) },
+    combat(): ReturnType<typeof playerStats> {
+      const r = rebirthCombat(this.p.rebirths)
+      const t = this.tech
+      return playerStats(this.p.stage, { atk: (t.atk ?? 1) * r, def: (t.def ?? 1) * r, hp: (t.hp ?? 1) * r })
+    },
     skill(): typeof DEFAULT_SKILL { return this.tech.skill ?? DEFAULT_SKILL },
   },
 
@@ -476,6 +480,28 @@ export const useGame = defineStore('game', {
       this.gain(this.tapGain)
       this.stat('taps')
       play('tap')
+    },
+
+    /** 轉世：境界歸零，保留功法、物品、成就，獲得永久加成；靈根重抽兩次取較佳 */
+    rebirth(): boolean {
+      if (!this.maxed || this.p.run) return false
+      const a = rollRoot()
+      const b = rollRoot()
+      const root = a.speed >= b.speed ? a : b
+      this.p.rebirths++
+      this.p.stage = 0
+      this.p.cultivation = 0
+      this.p.rootId = root.id
+      this.p.mainTech = 't_tuna'
+      this.p.buffs = []
+      this.stat('rebirths')
+      this.tab = 'cultivate'
+      const msg = `第 ${this.p.rebirths + 1} 世．轉生為${root.name}，修煉 ×${rebirthSpeed(this.p.rebirths)}、戰力 ×${rebirthCombat(this.p.rebirths)}`
+      this.addLog('你兵解轉世，帶著前世記憶重新踏上仙途。' + msg, 'good')
+      this.toast(msg, '🔄', 5000)
+      play('success')
+      this.save()
+      return true
     },
 
     newGame() {

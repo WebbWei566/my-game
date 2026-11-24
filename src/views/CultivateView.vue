@@ -56,7 +56,13 @@ const buffLeft = computed(() => {
   </section>
 
   <section class="actions">
-    <p v-if="g.maxed" class="done">你已飛升仙界，大道已成。</p>
+    <template v-if="g.maxed">
+      <p class="done">你已飛升仙界，大道已成。</p>
+      <button class="btn big" :disabled="!!g.p.run" @click="g.rebirth()">
+        🔄 轉世重修
+        <small>境界歸零，保留功法與物品；永久提升修煉與戰力，並重抽靈根</small>
+      </button>
+    </template>
     <template v-else>
       <div v-if="g.breakItems.length" class="pills">
         <span>輔助丹藥：</span>
