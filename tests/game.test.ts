@@ -168,3 +168,44 @@ describe('功法', () => {
     expect(g.buyTechnique('t_qingyuan')).toBe(false) // 不能重複購買
   })
 })
+
+describe('丹房', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+  afterEach(() => vi.restoreAllMocks())
+
+  it('採藥消耗次數並獲得已解鎖的靈草', () => {
+    const g = fresh()
+    const charges = g.p.gatherCharges
+    const got = g.gather()!
+    expect(g.p.gatherCharges).toBe(charges - 1)
+    expect(Object.keys(got).every((id) => ['herb_lingcao', 'herb_ningxue'].includes(id))).toBe(true)
+    g.p.gatherCharges = 0
+    expect(g.gather()).toBeNull()
+  })
+
+  it('煉丹成功產出丹藥並扣材料；材料不足回傳 null', () => {
+    const g = fresh()
+    g.p.inventory = { herb_lingcao: 3 }
+    vi.spyOn(Math, 'random').mockReturnValue(0.9) // perfect 成功率 98% > 0.9 → 成功；0.9 ≥ 0.5 → 不會雙枚
+    expect(g.craft('r_juqi', 'perfect')).toBe(1)
+    expect(g.count('pill_juqi')).toBe(1)
+    expect(g.count('herb_lingcao')).toBe(0)
+    expect(g.craft('r_juqi', 'perfect')).toBeNull()
+  })
+
+  it('煉丹失敗仍消耗材料', () => {
+    const g = fresh()
+    g.p.inventory = { herb_lingcao: 3 }
+    vi.spyOn(Math, 'random').mockReturnValue(0.99)
+    expect(g.craft('r_juqi', 'miss')).toBe(0)
+    expect(g.count('herb_lingcao')).toBe(0)
+  })
+
+  it('境界不足無法煉製高階丹方', () => {
+    const g = fresh()
+    g.p.inventory = { herb_lingcao: 3, herb_zhuguo: 1 }
+    expect(g.canCraft('r_break')).toBe(false)
+    g.p.stage = 2
+    expect(g.canCraft('r_break')).toBe(true)
+  })
+})

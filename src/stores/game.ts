@@ -6,6 +6,7 @@ import { stageInfo, MAX_STAGE } from '../data/realms'
 import { rollRoot, rootById } from '../data/spiritRoots'
 import { techById, techPrice } from '../data/techniques'
 import { itemById } from '../data/items'
+import { RECIPES, craftChance, rollGather, type FireResult } from '../data/recipes'
 import { EVENTS, type GameEvent, type EventEffect } from '../data/events'
 
 export interface LogLine { id: number; text: string; kind: 'info' | 'good' | 'bad' }
@@ -127,6 +128,43 @@ export const useGame = defineStore('game', {
       this.stat('techBought')
       this.save()
       return true
+    },
+
+    /** 採藥：消耗一次機會 */
+    gather(): Record<string, number> | null {
+      if (this.p.gatherCharges <= 0) return null
+      if (this.p.gatherCharges >= BALANCE.gatherMax) this.p.gatherAt = Date.now()
+      this.p.gatherCharges--
+      const got = rollGather(this.p.stage)
+      for (const [id, n] of Object.entries(got)) this.addItem(id, n)
+      this.addLog('入山採藥，得 ' + Object.entries(got).map(([id, n]) => `${itemById(id).name}×${n}`).join('、'), 'good')
+      this.stat('gathers')
+      this.save()
+      return got
+    },
+
+    canCraft(recipeId: string): boolean {
+      const r = RECIPES.find((x) => x.id === recipeId)
+      return !!r && this.p.stage >= r.minStage && Object.entries(r.inputs).every(([id, n]) => this.count(id) >= n)
+    },
+
+    /** 煉丹：回傳產出數量（0 = 失敗），材料不足回傳 null */
+    craft(recipeId: string, fire: FireResult): number | null {
+      const r = RECIPES.find((x) => x.id === recipeId)
+      if (!r || !this.canCraft(recipeId) || !this.takeItems(r.inputs)) return null
+      const name = itemById(r.output).name
+      this.stat('crafts')
+      if (Math.random() >= craftChance(r, fire, this.tech.alchemy ?? 0)) {
+        this.addLog(`煉製${name}失敗，丹爐中只剩一團焦黑藥渣。`, 'bad')
+        this.save()
+        return 0
+      }
+      const n = fire === 'perfect' && Math.random() < 0.5 ? 2 : 1
+      this.addItem(r.output, n)
+      this.stat('craftSuccess')
+      this.addLog(n > 1 ? `丹成雙枚！得${name}×2。` : `煉成${name}。`, 'good')
+      this.save()
+      return n
     },
 
     toSave(): SaveData {
