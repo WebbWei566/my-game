@@ -26,7 +26,8 @@ const usable = (i: Item) => !!(i.effect?.cultivationPct || i.effect?.buff)
         <div><span class="r" :class="'r' + it.rarity">{{ RARITY_NAME[it.rarity] }}</span>{{ it.name }} <b>×{{ g.count(it.id) }}</b></div>
         <small>{{ it.desc }}</small>
       </div>
-      <button v-if="usable(it)" class="btn sm" @click="g.useItem(it.id)">服用</button>
+      <button v-if="usable(it)" class="btn sm"
+        :disabled="!!it.effect?.cultivationPct && (g.maxed || g.p.cultivation >= g.required)" @click="g.useItem(it.id)">服用</button>
     </div>
   </section>
 </template>

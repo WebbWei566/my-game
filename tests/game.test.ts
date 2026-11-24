@@ -319,3 +319,26 @@ describe('轉世', () => {
     expect(base).toBe(2)
   })
 })
+
+describe('防呆', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('修為已滿時不能服用聚氣丹', () => {
+    const g = fresh()
+    g.addItem('pill_juqi', 1)
+    g.gain(1e9)
+    expect(g.useItem('pill_juqi')).toBe(false)
+    expect(g.count('pill_juqi')).toBe(1)
+  })
+
+  it('長時間沒 tick（背景節流）改用離線結算', () => {
+    const g = fresh()
+    g.p.stage = 10
+    g.startLoop()
+    const t0 = Date.now()
+    vi.spyOn(Date, 'now').mockReturnValue(t0 + 3600 * 1000)
+    g.tick()
+    vi.restoreAllMocks()
+    expect(g.p.cultivation).toBeGreaterThan(g.perSec * 5)
+  })
+})

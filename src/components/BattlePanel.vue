@@ -3,23 +3,24 @@ import { computed, ref, watch, nextTick } from 'vue'
 import { useGame } from '../stores/game'
 
 const g = useGame()
-const run = computed(() => g.p.run!)
-const b = computed(() => run.value.battle!)
+// 秘境結束時 run 會先變成 null，這裡全部用可選鏈避免卸載前報錯
+const run = computed(() => g.p.run)
+const b = computed(() => run.value?.battle ?? null)
 const logEl = ref<HTMLElement>()
 const shake = ref(false)
 
-watch(() => b.value.log.length, async () => {
+watch(() => b.value?.log.length, async () => {
   await nextTick()
   logEl.value?.scrollTo({ top: logEl.value.scrollHeight })
 })
-watch(() => run.value.hp, (now, before) => {
-  if (now < before) { shake.value = true; setTimeout(() => (shake.value = false), 300) }
+watch(() => run.value?.hp, (now, before) => {
+  if (now !== undefined && before !== undefined && now < before) { shake.value = true; setTimeout(() => (shake.value = false), 300) }
 })
 const pct = (a: number, m: number) => Math.max(0, (a / m) * 100) + '%'
 </script>
 
 <template>
-  <div class="battle">
+  <div v-if="run && b" class="battle">
     <div class="foe" :class="b.foe.kind">
       <div class="icon" :class="{ dead: b.foe.hp <= 0 }">{{ b.foe.icon }}</div>
       <div class="name">{{ b.foe.name }}</div>

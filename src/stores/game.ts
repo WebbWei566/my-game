@@ -119,7 +119,7 @@ export const useGame = defineStore('game', {
       const e = it.effect
       if (!e || this.count(id) <= 0) return false
       if (e.cultivationPct) {
-        if (this.maxed) return false
+        if (this.maxed || this.p.cultivation >= this.required) return false
         this.addItem(id, -1)
         this.gain(this.required * e.cultivationPct)
         this.addLog(`服用${it.name}，修為大進。`, 'good')
@@ -411,6 +411,11 @@ export const useGame = defineStore('game', {
 
     tick() {
       const now = Date.now()
+      // 背景節流或裝置休眠造成長時間沒 tick：改用離線結算，避免少算
+      if (this.started && now - lastTick > 60_000) {
+        this.settleOffline(lastTick)
+        return
+      }
       const dt = Math.max(0, Math.min((now - lastTick) / 1000, 5))
       lastTick = now
       this.now = now
