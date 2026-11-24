@@ -11,6 +11,7 @@ import { playerStats, makeFoe, playTurn, type Action } from '../core/battle'
 import { itemById } from '../data/items'
 import { RECIPES, craftChance, rollGather, type FireResult } from '../data/recipes'
 import { play } from '../core/sfx'
+import { ACHIEVEMENTS } from '../data/achievements'
 import { pickEvent, type GameEvent, type EventEffect, type EventChoice } from '../data/events'
 
 export interface LogLine { id: number; text: string; kind: 'info' | 'good' | 'bad' }
@@ -405,7 +406,22 @@ export const useGame = defineStore('game', {
       if (!this.activeEvent && this.tab === 'cultivate' && !this.p.run?.battle && Math.random() < dt / BALANCE.eventIntervalSec) {
         this.activeEvent = pickEvent(this.p.stage, this.p.flags)
       }
+      this.checkAchievements()
       if ((saveCounter += dt) > 10) { saveCounter = 0; this.save() }
+    },
+
+    checkAchievements() {
+      for (const a of ACHIEVEMENTS) {
+        if (this.p.achievements.includes(a.id)) continue
+        const [cur, target] = a.progress(this.p)
+        if (cur < target) continue
+        this.p.achievements.push(a.id)
+        for (const [id, n] of Object.entries(a.reward ?? {})) this.addItem(id, n)
+        const reward = Object.entries(a.reward ?? {}).map(([id, n]) => `${itemById(id).name}×${n}`).join('、')
+        this.toast(`成就達成：${a.name}${reward ? `（獎勵 ${reward}）` : ''}`, a.icon, 4000)
+        this.addLog(`🏆 成就達成：${a.name}`, 'good')
+        play('unlock')
+      }
     },
 
     /** 採藥次數隨時間回復 */

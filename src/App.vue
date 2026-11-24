@@ -6,6 +6,7 @@ import InstallPrompt from './components/InstallPrompt.vue'
 import Tribulation from './components/Tribulation.vue'
 import EventModal from './components/EventModal.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
+import AchievementsPanel from './components/AchievementsPanel.vue'
 import TabBar from './components/TabBar.vue'
 import ToastHost from './components/ToastHost.vue'
 import CultivateView from './views/CultivateView.vue'
@@ -17,6 +18,7 @@ import DungeonView from './views/DungeonView.vue'
 const g = useGame()
 g.init()
 const showSettings = ref(false)
+const showAch = ref(false)
 </script>
 
 <template>
@@ -34,7 +36,10 @@ const showSettings = ref(false)
             <div class="realm">{{ g.info.label }}</div>
             <div class="sub">{{ g.root.name }}．《{{ g.tech.name }}》．每秒 {{ fmt(g.perSec) }}</div>
           </div>
-          <button class="icon" aria-label="設定" @click="showSettings = true">⚙</button>
+          <div>
+            <button class="icon" aria-label="成就" @click="showAch = true">🏆</button>
+            <button class="icon" aria-label="設定" @click="showSettings = true">⚙</button>
+          </div>
         </header>
         <CultivateView v-if="g.tab === 'cultivate'" />
         <TechniquesView v-else-if="g.tab === 'techniques'" />
@@ -48,6 +53,7 @@ const showSettings = ref(false)
     <EventModal />
     <Tribulation v-if="g.tribulation" @done="g.finishTribulation" />
     <SettingsPanel v-if="showSettings" @close="showSettings = false" />
+    <AchievementsPanel v-if="showAch" @close="showAch = false" />
     <InstallPrompt />
     <ToastHost />
   </div>

@@ -258,3 +258,25 @@ describe('奇遇', () => {
     expect(g.p.techniques).toContain('t_qingyuan')
   })
 })
+
+describe('成就', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('達成條件時解鎖並發放獎勵，且只發一次', () => {
+    const g = fresh()
+    const before = g.count('herb_lingcao')
+    g.p.stage = 1
+    g.checkAchievements()
+    expect(g.p.achievements).toContain('a_stage1')
+    expect(g.count('herb_lingcao')).toBe(before + 5)
+    g.checkAchievements()
+    expect(g.count('herb_lingcao')).toBe(before + 5)
+  })
+
+  it('成就資料：id 不重複、獎勵物品存在', async () => {
+    const { ACHIEVEMENTS } = await import('../src/data/achievements')
+    const { itemById } = await import('../src/data/items')
+    expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length)
+    for (const a of ACHIEVEMENTS) for (const id of Object.keys(a.reward ?? {})) expect(() => itemById(id)).not.toThrow()
+  })
+})
