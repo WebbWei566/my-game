@@ -2,10 +2,13 @@
 import { ref } from 'vue'
 import { useGame } from '../stores/game'
 import { isMuted, setMuted } from '../core/sfx'
+import DevPanel from './DevPanel.vue'
+const devMode = import.meta.env.DEV || new URLSearchParams(location.search).has('dev')
 const emit = defineEmits<{ close: [] }>()
 const g = useGame()
 const code = ref('')
 const msg = ref('')
+const version = __APP_VERSION__
 const muted = ref(isMuted())
 function toggleMute() { muted.value = !muted.value; setMuted(muted.value) }
 
@@ -36,6 +39,8 @@ async function doReset() {
       </div>
       <button class="btn danger" @click="doReset">散功重修（重置）</button>
       <button class="btn ghost" @click="emit('close')">關閉</button>
+      <DevPanel v-if="devMode && g.started" />
+      <p class="ver">v{{ version }}</p>
     </div>
   </div>
 </template>
@@ -46,5 +51,7 @@ textarea { width: 100%; box-sizing: border-box; font: 12px monospace; padding: 8
 .card > .btn { width: 100%; margin-top: 8px; }
 .note { font-size: 13px; opacity: .75; }
 .full { width: 100%; margin-bottom: 8px; }
+.card { max-height: 90dvh; overflow-y: auto; }
+.ver { text-align: center; font-size: 11px; opacity: .4; margin: 8px 0 0; }
 .msg { color: var(--jade); font-size: 14px; }
 </style>

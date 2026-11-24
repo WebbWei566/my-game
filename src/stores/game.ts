@@ -47,6 +47,8 @@ export const useGame = defineStore('game', {
     runNote: '',
     lastRunSummary: '',
     toasts: [] as { id: number; icon: string; text: string }[],
+    /** 開發者面板：時間流速倍率 */
+    devSpeed: 1,
   }),
 
   getters: {
@@ -409,7 +411,7 @@ export const useGame = defineStore('game', {
       lastTick = now
       this.now = now
       if (!this.started || this.tribulation) return
-      this.gain(this.perSec * dt)
+      this.gain(this.perSec * dt * this.devSpeed)
       this.updateGather()
       if (this.p.buffs.some((b) => b.until <= now)) this.p.buffs = this.p.buffs.filter((b) => b.until > now)
       if (!this.activeEvent && this.tab === 'cultivate' && !this.p.run?.battle && Math.random() < dt / BALANCE.eventIntervalSec) {
