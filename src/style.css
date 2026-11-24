@@ -1,0 +1,31 @@
+:root {
+  --paper: #f3ecd9;
+  --ink: #1b1a17;
+  --line: #1b1a1722;
+  --gold: #c9a45c;
+  --jade: #2f7d6d;
+  --cinnabar: #a33a2b;
+  --brush: 'Ma Shan Zheng', 'STKaiti', 'KaiTi', serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1b1a17; --ink: #ece4cf; --line: #ece4cf22;
+    --jade: #5fbfa8; --cinnabar: #e0705f;
+    color-scheme: dark;
+  }
+}
+* { -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--paper); color: var(--ink);
+  font-family: 'Noto Serif TC', 'PingFang TC', 'Microsoft JhengHei', serif; overscroll-behavior: none; }
+.btn { font: inherit; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--ink);
+  background: var(--ink); color: var(--paper); cursor: pointer; touch-action: manipulation; }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn.big { font-size: 18px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.btn.big small { font-size: 12px; opacity: .75; }
+.btn.danger { background: var(--cinnabar); border-color: var(--cinnabar); color: #fff; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.modal { position: fixed; inset: 0; z-index: 25; background: #0008; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.card { background: var(--paper); color: var(--ink); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px;
+  border: 1px solid var(--gold); box-shadow: 0 10px 40px #0006; }
+.card h3 { margin-top: 0; font-family: var(--brush); font-size: 22px; }
