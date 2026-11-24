@@ -7,7 +7,7 @@ import { rollRoot, rootById } from '../data/spiritRoots'
 import { techById, techPrice } from '../data/techniques'
 import { itemById } from '../data/items'
 import { RECIPES, craftChance, rollGather, type FireResult } from '../data/recipes'
-import { EVENTS, type GameEvent, type EventEffect } from '../data/events'
+import { pickEvent, type GameEvent, type EventEffect, type EventChoice } from '../data/events'
 
 export interface LogLine { id: number; text: string; kind: 'info' | 'good' | 'bad' }
 export type Tab = 'cultivate' | 'techniques' | 'alchemy' | 'dungeon' | 'bag'
@@ -227,7 +227,7 @@ export const useGame = defineStore('game', {
       this.updateGather()
       if (this.p.buffs.some((b) => b.until <= now)) this.p.buffs = this.p.buffs.filter((b) => b.until > now)
       if (!this.activeEvent && this.tab === 'cultivate' && Math.random() < dt / BALANCE.eventIntervalSec) {
-        this.activeEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)]
+        this.activeEvent = pickEvent(this.p.stage, this.p.flags)
       }
       if ((saveCounter += dt) > 10) { saveCounter = 0; this.save() }
     },
@@ -329,12 +329,19 @@ export const useGame = defineStore('game', {
         // 已學會的功法轉為修為
         this.gain(this.required * 0.2)
       }
+      if (eff.buff) this.p.buffs.push({ id: 'event', mult: eff.buff.mult, until: Date.now() + eff.buff.durationSec * 1000 })
+    },
+
+    canChoose(c: EventChoice): boolean {
+      return Object.entries(c.cost ?? {}).every(([id, n]) => this.count(id) >= n)
     },
 
     chooseEvent(index: number) {
       const ev = this.activeEvent
       if (!ev) return
       const choice = ev.choices[index]
+      if (!this.canChoose(choice) || (choice.cost && !this.takeItems(choice.cost))) return
+      if (ev.once) this.p.flags['ev_' + ev.id] = true
       const ok = choice.chance === undefined || Math.random() < choice.chance
       const eff: EventEffect = ok ? choice.success : (choice.fail ?? choice.success)
       this.addLog(`【${ev.title}】${eff.text}`, ok && (eff.cultivationPct ?? 0) >= 0 ? 'good' : 'bad')

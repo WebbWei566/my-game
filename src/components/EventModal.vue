@@ -9,7 +9,7 @@ const g = useGame()
       <h3>✦ 奇遇：{{ g.activeEvent.title }}</h3>
       <p>{{ g.activeEvent.body }}</p>
       <div class="choices">
-        <button v-for="(c, i) in g.activeEvent.choices" :key="i" class="btn" @click="g.chooseEvent(i)">
+        <button v-for="(c, i) in g.activeEvent.choices" :key="i" class="btn" :disabled="!g.canChoose(c)" @click="g.chooseEvent(i)">
           {{ c.label }}<small v-if="c.chance !== undefined">（{{ Math.round(c.chance * 100) }}%）</small>
         </button>
       </div>

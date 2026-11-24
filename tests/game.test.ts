@@ -209,3 +209,52 @@ describe('丹房', () => {
     expect(g.canCraft('r_break')).toBe(true)
   })
 })
+
+describe('奇遇', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+  afterEach(() => vi.restoreAllMocks())
+
+  it('事件資料完整：至少 20 則、id 不重複、物品與功法 id 皆存在', async () => {
+    const { EVENTS } = await import('../src/data/events')
+    const { itemById } = await import('../src/data/items')
+    const { TECHNIQUES } = await import('../src/data/techniques')
+    expect(EVENTS.length).toBeGreaterThanOrEqual(20)
+    expect(new Set(EVENTS.map((e) => e.id)).size).toBe(EVENTS.length)
+    for (const e of EVENTS) for (const c of e.choices) for (const eff of [c.success, c.fail, { items: c.cost }]) {
+      for (const id of Object.keys(eff?.items ?? {})) expect(() => itemById(id)).not.toThrow()
+      if (eff && 'technique' in eff && eff.technique) expect(TECHNIQUES.some((t) => t.id === eff.technique)).toBe(true)
+    }
+  })
+
+  it('pickEvent 遵守境界限制與一次性旗標', async () => {
+    const { pickEvent, EVENTS } = await import('../src/data/events')
+    for (let i = 0; i < 200; i++) {
+      const e = pickEvent(0, {})!
+      expect(e.minStage ?? 0).toBe(0)
+    }
+    const seen = Object.fromEntries(EVENTS.filter((e) => e.once).map((e) => ['ev_' + e.id, true]))
+    for (let i = 0; i < 200; i++) expect(pickEvent(30, seen)!.once).toBeFalsy()
+  })
+
+  it('需要花費的選項：不足時不能選，足夠時扣除', async () => {
+    const { EVENTS } = await import('../src/data/events')
+    const g = fresh()
+    g.activeEvent = EVENTS.find((e) => e.id === 'merchant')!
+    g.chooseEvent(0)
+    expect(g.activeEvent).not.toBeNull() // 妖丹不足，沒有反應
+    g.addItem('mat_yaodan', 2)
+    g.chooseEvent(0)
+    expect(g.activeEvent).toBeNull()
+    expect(g.count('pill_break')).toBe(1)
+    expect(g.count('mat_yaodan')).toBe(0)
+  })
+
+  it('一次性功法事件會記錄旗標並習得功法', async () => {
+    const { EVENTS } = await import('../src/data/events')
+    const g = fresh()
+    g.activeEvent = EVENTS.find((e) => e.id === 'ancient-scroll')!
+    g.chooseEvent(0)
+    expect(g.p.flags['ev_ancient-scroll']).toBe(true)
+    expect(g.p.techniques).toContain('t_qingyuan')
+  })
+})
