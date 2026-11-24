@@ -8,6 +8,7 @@ import EventModal from './components/EventModal.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import AchievementsPanel from './components/AchievementsPanel.vue'
 import DailyPanel from './components/DailyPanel.vue'
+import ErrorOverlay from './components/ErrorOverlay.vue'
 import TabBar from './components/TabBar.vue'
 import ToastHost from './components/ToastHost.vue'
 import CultivateView from './views/CultivateView.vue'
@@ -60,6 +61,7 @@ const showDaily = ref(false)
     <DailyPanel v-if="showDaily" @close="showDaily = false" />
     <InstallPrompt />
     <ToastHost />
+    <ErrorOverlay />
     <button v-if="g.updateReady && !g.tribulation && !g.p.run?.battle" class="update" @click="g.updateReady()">
       ✨ 新版本可用，點此更新
     </button>

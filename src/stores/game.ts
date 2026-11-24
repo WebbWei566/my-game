@@ -54,6 +54,8 @@ export const useGame = defineStore('game', {
     devSpeed: 1,
     /** PWA 有新版本時，由 main.ts 設定為「存檔並更新」的函式 */
     updateReady: null as null | (() => Promise<void>),
+    /** 全域錯誤訊息（顯示錯誤畫面） */
+    fatal: '',
   }),
 
   getters: {
