@@ -5,6 +5,7 @@ const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: 'cultivate', label: '修煉', icon: '☯' },
   { id: 'techniques', label: '功法', icon: '📜' },
   { id: 'alchemy', label: '丹房', icon: '⚗' },
+  { id: 'dungeon', label: '秘境', icon: '⚔' },
   { id: 'bag', label: '行囊', icon: '🎒' },
 ]
 </script>

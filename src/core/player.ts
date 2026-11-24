@@ -1,5 +1,19 @@
 // 玩家持久化狀態（即存檔內容），新增欄位時在 defaultPlayer 補預設值即可自動相容舊檔
+import type { DungeonMap } from './dungeonMap'
+import type { BattleState } from './battle'
+
 export interface Buff { id: string; mult: number; until: number }
+
+export interface DungeonRun {
+  dungeonId: string
+  map: DungeonMap
+  at: string
+  visited: string[]
+  hp: number
+  mp: number
+  loot: Record<string, number>
+  battle: BattleState | null
+}
 
 export interface PlayerState {
   rootId: string
@@ -14,6 +28,7 @@ export interface PlayerState {
   stats: Record<string, number>
   achievements: string[]
   flags: Record<string, boolean>
+  run: DungeonRun | null
   lastSaved: number
   createdAt: number
 }
@@ -32,6 +47,7 @@ export function defaultPlayer(now = Date.now()): PlayerState {
     stats: {},
     achievements: [],
     flags: {},
+    run: null,
     lastSaved: now,
     createdAt: now,
   }

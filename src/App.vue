@@ -11,6 +11,7 @@ import CultivateView from './views/CultivateView.vue'
 import BagView from './views/BagView.vue'
 import TechniquesView from './views/TechniquesView.vue'
 import AlchemyView from './views/AlchemyView.vue'
+import DungeonView from './views/DungeonView.vue'
 
 const g = useGame()
 g.init()
@@ -37,6 +38,7 @@ const showSettings = ref(false)
         <CultivateView v-if="g.tab === 'cultivate'" />
         <TechniquesView v-else-if="g.tab === 'techniques'" />
         <AlchemyView v-else-if="g.tab === 'alchemy'" />
+        <DungeonView v-else-if="g.tab === 'dungeon'" />
         <BagView v-else-if="g.tab === 'bag'" />
       </template>
     </main>
