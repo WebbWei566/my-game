@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useGame } from '../stores/game'
+import { isMuted, setMuted } from '../core/sfx'
 const emit = defineEmits<{ close: [] }>()
 const g = useGame()
 const code = ref('')
 const msg = ref('')
+const muted = ref(isMuted())
+function toggleMute() { muted.value = !muted.value; setMuted(muted.value) }
 
 async function doExport() {
   code.value = g.exportCode()
@@ -23,6 +26,7 @@ async function doReset() {
   <div class="modal" @click.self="emit('close')">
     <div class="card">
       <h3>設定</h3>
+      <button class="btn ghost full" @click="toggleMute">{{ muted ? '🔇 音效：關' : '🔊 音效：開' }}</button>
       <p class="note">建議定期匯出存檔碼備份，避免瀏覽器清除資料造成進度遺失。</p>
       <textarea v-model="code" rows="4" placeholder="在此貼上存檔碼以匯入"></textarea>
       <p v-if="msg" class="msg">{{ msg }}</p>
@@ -41,5 +45,6 @@ textarea { width: 100%; box-sizing: border-box; font: 12px monospace; padding: 8
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
 .card > .btn { width: 100%; margin-top: 8px; }
 .note { font-size: 13px; opacity: .75; }
+.full { width: 100%; margin-bottom: 8px; }
 .msg { color: var(--jade); font-size: 14px; }
 </style>

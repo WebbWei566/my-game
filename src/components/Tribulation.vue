@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { play } from '../core/sfx'
 
 // 渡劫小遊戲：天雷預警後落下，點擊切換位置閃避
 const emit = defineEmits<{ done: [score: number] }>()
@@ -27,6 +28,7 @@ function nextRound() {
   later(() => {
     warn.value = []
     strike.value = lanes
+    play('thunder')
     if (lanes.includes(pos.value)) {
       hits.value++
       hurt.value = true
@@ -41,7 +43,7 @@ onUnmounted(() => timers.forEach(clearTimeout))
 </script>
 
 <template>
-  <div class="trib">
+  <div class="trib" :class="{ flash: strike.length > 0 }">
     <h2>⚡ 天劫降臨 ⚡</h2>
     <p class="hint">看準紅光預警，點擊下方位置閃避天雷！</p>
     <p>第 {{ round }} / {{ ROUNDS }} 道雷劫　受創 {{ hits }}</p>
@@ -49,6 +51,9 @@ onUnmounted(() => timers.forEach(clearTimeout))
       <div v-for="i in LANES" :key="i" class="lane"
         :class="{ warn: warn.includes(i - 1), strike: strike.includes(i - 1) }"
         @pointerdown="pos = i - 1">
+        <svg v-if="strike.includes(i - 1)" class="bolt" viewBox="0 0 40 200" preserveAspectRatio="none">
+          <polyline points="22,0 12,60 26,70 10,130 24,138 16,200" />
+        </svg>
         <div v-if="pos === i - 1" class="me" :class="{ hurt }">🧘</div>
       </div>
     </div>
@@ -64,8 +69,12 @@ h2 { letter-spacing: .3em; margin: 8px 0; }
 .lane { position: relative; border-radius: 12px; background: #ffffff0d; display: flex; align-items: flex-end; justify-content: center;
   padding-bottom: 24px; transition: background .15s; touch-action: manipulation; }
 .lane.warn { background: #ff3b3b33; box-shadow: inset 0 0 30px #ff3b3b88; }
-.lane.strike { background: linear-gradient(#fff, #9ad7ff 40%, #6c5cff); animation: flash .35s; }
-.me { font-size: 44px; }
+.lane.strike { background: linear-gradient(#ffffff55, #9ad7ff55 40%, #6c5cff88); animation: flash .35s; }
+.me { font-size: 44px; position: relative; }
+.bolt { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bolt polyline { fill: none; stroke: #fff; stroke-width: 4; filter: drop-shadow(0 0 6px #9ad7ff); vector-effect: non-scaling-stroke; }
+.trib.flash { animation: screen .35s; }
+@keyframes screen { 0% { background: #fff } 100% { background: radial-gradient(#2a2440, #0b0a10) } }
 .me.hurt { animation: shake .3s; filter: drop-shadow(0 0 8px red); }
 @keyframes flash { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
 @keyframes shake { 0%,100% { transform: none } 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }

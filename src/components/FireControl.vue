@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import type { FireResult } from '../data/recipes'
+import { play } from '../core/sfx'
 
 // 火候小遊戲：指針來回擺動，在金色區間內收丹
 const emit = defineEmits<{ done: [r: FireResult] }>()
@@ -30,6 +31,7 @@ function stop() {
   const d = Math.abs(pos.value - center)
   const r: FireResult = d <= PERFECT / 2 ? 'perfect' : d <= ZONE / 2 ? 'good' : 'miss'
   navigator.vibrate?.(r === 'miss' ? 200 : 40)
+  play(r === 'miss' ? 'fail' : 'tap')
   setTimeout(() => emit('done', r), 500)
 }
 

@@ -10,6 +10,7 @@ import { generateMap, findNode } from '../core/dungeonMap'
 import { playerStats, makeFoe, playTurn, type Action } from '../core/battle'
 import { itemById } from '../data/items'
 import { RECIPES, craftChance, rollGather, type FireResult } from '../data/recipes'
+import { play } from '../core/sfx'
 import { pickEvent, type GameEvent, type EventEffect, type EventChoice } from '../data/events'
 
 export interface LogLine { id: number; text: string; kind: 'info' | 'good' | 'bad' }
@@ -35,6 +36,7 @@ export const useGame = defineStore('game', {
     /** 秘境中最近一則提示（寶箱、休憩） */
     runNote: '',
     lastRunSummary: '',
+    toasts: [] as { id: number; icon: string; text: string }[],
   }),
 
   getters: {
@@ -69,6 +71,13 @@ export const useGame = defineStore('game', {
     addLog(text: string, kind: LogLine['kind'] = 'info') {
       this.log.unshift({ id: ++logId, text, kind })
       if (this.log.length > 50) this.log.pop()
+    },
+
+    toast(text: string, icon = '✦', ms = 3000) {
+      const id = ++logId
+      this.toasts.push({ id, icon, text })
+      if (this.toasts.length > 3) this.toasts.shift()
+      setTimeout(() => (this.toasts = this.toasts.filter((t) => t.id !== id)), ms)
     },
 
     stat(key: string, n = 1) {
@@ -114,6 +123,8 @@ export const useGame = defineStore('game', {
       if (this.p.techniques.includes(id)) return false
       this.p.techniques.push(id)
       this.addLog(`習得功法《${techById(id).name}》！`, 'good')
+      this.toast(`習得功法《${techById(id).name}》`, '📜')
+      play('unlock')
       return true
     },
 
@@ -145,6 +156,7 @@ export const useGame = defineStore('game', {
       this.p.gatherCharges--
       const got = rollGather(this.p.stage)
       for (const [id, n] of Object.entries(got)) this.addItem(id, n)
+      play('coin')
       this.addLog('入山採藥，得 ' + Object.entries(got).map(([id, n]) => `${itemById(id).name}×${n}`).join('、'), 'good')
       this.stat('gathers')
       this.save()
@@ -164,6 +176,7 @@ export const useGame = defineStore('game', {
       this.stat('crafts')
       if (Math.random() >= craftChance(r, fire, this.tech.alchemy ?? 0)) {
         this.addLog(`煉製${name}失敗，丹爐中只剩一團焦黑藥渣。`, 'bad')
+        play('fail')
         this.save()
         return 0
       }
@@ -171,6 +184,7 @@ export const useGame = defineStore('game', {
       this.addItem(r.output, n)
       this.stat('craftSuccess')
       this.addLog(n > 1 ? `丹成雙枚！得${name}×2。` : `煉成${name}。`, 'good')
+      play('craft')
       this.save()
       return n
     },
@@ -257,6 +271,7 @@ export const useGame = defineStore('game', {
       }
       const me = { hp: run.hp, mp: run.mp, stats: this.combat }
       playTurn(b, me, action)
+      play(b.over === 'win' ? 'coin' : 'hit')
       run.hp = me.hp
       run.mp = me.mp
       if (b.log.length > 30) b.log.splice(0, b.log.length - 30)
@@ -316,6 +331,8 @@ export const useGame = defineStore('game', {
       const text = Object.entries(kept).map(([id, n]) => `${itemById(id).name}×${n}`).join('、') || '無'
       const head = result === 'clear' ? `🎉 通關${d.name}！` : result === 'lose' ? `你在${d.name}戰敗，狼狽逃回，失去一半戰利品。` : `你從${d.name}撤離。`
       if (result === 'clear') {
+        play('success')
+        this.toast(head, '🏆', 4000)
         this.p.flags['clear_' + d.id] = true
         this.stat('dungeonClears')
       }
@@ -410,6 +427,7 @@ export const useGame = defineStore('game', {
     meditate() {
       this.gain(this.tapGain)
       this.stat('taps')
+      play('tap')
     },
 
     newGame() {
@@ -469,10 +487,13 @@ export const useGame = defineStore('game', {
         this.stat('breakthroughs')
         const msg = this.maxed ? `渡劫成功，白日飛升！你已達 ${this.info.label}。` : `突破成功！晉升 ${this.info.label}。`
         this.addLog(msg, 'good')
+        this.toast(msg, '☯')
+        play('success')
         navigator.vibrate?.([60, 40, 120])
       } else {
         this.p.cultivation *= 1 - BALANCE.failLossPct
         this.stat('breakFails')
+        play('fail')
         this.addLog(`突破失敗，真元逆行，損失 ${BALANCE.failLossPct * 100}% 修為。`, 'bad')
       }
       this.save()

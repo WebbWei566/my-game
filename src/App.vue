@@ -7,6 +7,7 @@ import Tribulation from './components/Tribulation.vue'
 import EventModal from './components/EventModal.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import TabBar from './components/TabBar.vue'
+import ToastHost from './components/ToastHost.vue'
 import CultivateView from './views/CultivateView.vue'
 import BagView from './views/BagView.vue'
 import TechniquesView from './views/TechniquesView.vue'
@@ -48,6 +49,7 @@ const showSettings = ref(false)
     <Tribulation v-if="g.tribulation" @done="g.finishTribulation" />
     <SettingsPanel v-if="showSettings" @close="showSettings = false" />
     <InstallPrompt />
+    <ToastHost />
   </div>
 </template>
 
