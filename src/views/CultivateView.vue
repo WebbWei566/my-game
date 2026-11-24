@@ -19,6 +19,17 @@ function tap(e: PointerEvent) {
   setTimeout(() => (ripples.value = ripples.value.filter((x) => x.id !== item.id)), 800)
 }
 
+// 新手提示：前幾個境界依情境提示下一步
+const hint = computed(() => {
+  if (g.p.stage >= 5 || g.maxed) return ''
+  if (g.canBreak && g.isMajorBreak) return '大境界突破需要渡劫：天雷落下前看準紅光，點擊其他位置閃避。服用破境丹可以提高成功率。'
+  if (g.canBreak) return '修為已滿！點擊下方「突破」晉升境界。'
+  if (g.p.stage === 0) return '修為會自動累積，點擊中間的修士打坐可以加快速度。'
+  if (g.p.stage === 1 && !g.p.stats.crafts) return '丹房已開放：入山採藥，再用靈草煉製聚氣丹。'
+  if (g.p.stage >= 2 && !g.p.stats.dungeonRuns) return '秘境已開放：擊敗妖獸取得妖丹，可在功法頁的藏經閣兌換功法。'
+  return ''
+})
+
 const chance = computed(() => Math.round(g.breakChance(breakItem.value) * 100))
 const buffLeft = computed(() => {
   const until = Math.max(0, ...g.p.buffs.map((b) => b.until))
@@ -34,6 +45,8 @@ const buffLeft = computed(() => {
       {{ fmt(g.p.cultivation) }} / {{ fmt(g.required) }}
     </div>
   </section>
+
+  <p v-if="hint" class="hint">💡 {{ hint }}</p>
 
   <section class="seat" @pointerdown="tap">
     <div class="aura" :style="{ opacity: 0.3 + g.progress * 0.7 }"></div>
@@ -81,6 +94,7 @@ const buffLeft = computed(() => {
 @keyframes up { to { transform: translateY(-60px); opacity: 0 } }
 .actions { display: grid; gap: 8px; }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 14px; }
+.hint { margin: 0; font-size: 13px; padding: 8px 10px; border-radius: 10px; background: #c9a45c22; border: 1px dashed var(--gold); }
 .done { text-align: center; font-size: 18px; color: var(--gold); }
 .log { max-height: 24vh; overflow-y: auto; font-size: 14px; line-height: 1.6; border-top: 1px solid var(--line); padding-top: 8px; }
 .log p { margin: 0 0 4px; }

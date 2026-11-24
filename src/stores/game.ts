@@ -17,6 +17,15 @@ import { pickEvent, type GameEvent, type EventEffect, type EventChoice } from '.
 export interface LogLine { id: number; text: string; kind: 'info' | 'good' | 'bad' }
 export type Tab = 'cultivate' | 'techniques' | 'alchemy' | 'dungeon' | 'bag'
 
+/** 分頁解鎖所需境界（新手引導：功能逐步開放） */
+export const TAB_UNLOCK: Record<Tab, { stage: number; label: string }> = {
+  cultivate: { stage: 0, label: '修煉' },
+  bag: { stage: 0, label: '行囊' },
+  alchemy: { stage: 1, label: '丹房' },
+  techniques: { stage: 2, label: '功法' },
+  dungeon: { stage: 2, label: '秘境' },
+}
+
 let logId = 0
 let timer: number | undefined
 let lastTick = 0
@@ -407,7 +416,28 @@ export const useGame = defineStore('game', {
         this.activeEvent = pickEvent(this.p.stage, this.p.flags)
       }
       this.checkAchievements()
+      this.checkUnlocks()
       if ((saveCounter += dt) > 10) { saveCounter = 0; this.save() }
+    },
+
+    tabUnlocked(t: Tab): boolean {
+      return this.p.stage >= TAB_UNLOCK[t].stage
+    },
+
+    checkUnlocks() {
+      for (const [t, u] of Object.entries(TAB_UNLOCK)) {
+        if (u.stage === 0 || this.p.stage < u.stage || this.p.flags['unlock_' + t]) continue
+        this.p.flags['unlock_' + t] = true
+        this.p.flags['new_' + t] = true
+        this.toast(`新功能解鎖：${u.label}`, '🔓', 4000)
+        play('unlock')
+      }
+    },
+
+    openTab(t: Tab) {
+      if (!this.tabUnlocked(t)) return
+      this.tab = t
+      delete this.p.flags['new_' + t]
     },
 
     checkAchievements() {

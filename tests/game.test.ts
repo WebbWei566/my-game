@@ -280,3 +280,20 @@ describe('成就', () => {
     for (const a of ACHIEVEMENTS) for (const id of Object.keys(a.reward ?? {})) expect(() => itemById(id)).not.toThrow()
   })
 })
+
+describe('新手引導', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  it('分頁隨境界解鎖，未解鎖時無法切換', () => {
+    const g = fresh()
+    expect(g.tabUnlocked('dungeon')).toBe(false)
+    g.openTab('dungeon')
+    expect(g.tab).toBe('cultivate')
+    g.p.stage = 2
+    g.checkUnlocks()
+    expect(g.p.flags.new_dungeon).toBe(true)
+    g.openTab('dungeon')
+    expect(g.tab).toBe('dungeon')
+    expect(g.p.flags.new_dungeon).toBeUndefined()
+  })
+})
