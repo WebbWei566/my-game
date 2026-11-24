@@ -433,3 +433,26 @@ describe('每日', () => {
     expect(g.p.daily.claimed).toEqual([])
   })
 })
+
+describe('存檔清理', () => {
+  it('移除不存在的物品、功法、秘境與不合理數值', () => {
+    const d = migrate({
+      version: 2, rootId: 'nope', stage: 999, cultivation: -5,
+      inventory: { herb_lingcao: 3, deleted_item: 9, pill_juqi: -1 },
+      techniques: ['t_tuna', 't_gone', 't_qingyuan', 't_qingyuan'], mainTech: 't_gone',
+      plots: [{ herb: 'deleted', plantedAt: 1, readyAt: 2 }, null],
+      run: { dungeonId: 'd_gone', map: { layers: [] }, at: '0-0' },
+      buffs: [{ id: 'x', mult: NaN, until: 1 }],
+      lastSaved: 1, createdAt: 1,
+    })!
+    expect(d.rootId).toBe('mixed')
+    expect(d.stage).toBe(MAX_STAGE)
+    expect(d.cultivation).toBe(0)
+    expect(d.inventory).toEqual({ herb_lingcao: 3 })
+    expect(d.techniques).toEqual(['t_tuna', 't_qingyuan'])
+    expect(d.mainTech).toBe('t_tuna')
+    expect(d.plots).toEqual([null, null])
+    expect(d.run).toBeNull()
+    expect(d.buffs).toEqual([])
+  })
+})

@@ -1,5 +1,10 @@
 import { get, set, del } from 'idb-keyval'
 import { normalize, type PlayerState } from './player'
+import { ITEMS } from '../data/items'
+import { TECHNIQUES } from '../data/techniques'
+import { DUNGEONS } from '../data/dungeons'
+import { SPIRIT_ROOTS } from '../data/spiritRoots'
+import { MAX_STAGE } from '../data/realms'
 
 export const SAVE_VERSION = 2
 const KEY = 'wendao-save'
@@ -17,7 +22,31 @@ export function migrate(raw: any): SaveData | null {
     d.version = 2
   }
   if (d.version !== SAVE_VERSION) return null
-  return { ...normalize(d), version: SAVE_VERSION }
+  return { ...sanitize(normalize(d)), version: SAVE_VERSION }
+}
+
+/**
+ * 清除存檔中已不存在的 id 與不合理的數值，避免匯入壞檔或內容改版後遊戲崩潰
+ */
+export function sanitize(p: PlayerState): PlayerState {
+  const items = new Set(ITEMS.map((i) => i.id))
+  const techs = new Set(TECHNIQUES.map((t) => t.id))
+  const num = (x: unknown, fallback = 0) => (typeof x === 'number' && Number.isFinite(x) ? x : fallback)
+
+  p.stage = Math.max(0, Math.min(MAX_STAGE, Math.floor(num(p.stage))))
+  p.cultivation = Math.max(0, num(p.cultivation))
+  p.rebirths = Math.max(0, Math.floor(num(p.rebirths)))
+  if (!SPIRIT_ROOTS.some((r) => r.id === p.rootId)) p.rootId = SPIRIT_ROOTS[0].id
+  p.inventory = Object.fromEntries(
+    Object.entries(p.inventory).filter(([id, n]) => items.has(id) && num(n) > 0).map(([id, n]) => [id, Math.floor(n)]))
+  p.techniques = [...new Set(p.techniques.filter((id) => techs.has(id)))]
+  if (!p.techniques.includes('t_tuna')) p.techniques.unshift('t_tuna')
+  if (!p.techniques.includes(p.mainTech)) p.mainTech = 't_tuna'
+  p.plots = p.plots.map((x) => (x && items.has(x.herb) && num(x.readyAt) > 0 ? x : null))
+  if (p.run && !DUNGEONS.some((d) => d.id === p.run!.dungeonId)) p.run = null
+  if (p.run && (!p.run.map?.layers?.length || typeof p.run.at !== 'string')) p.run = null
+  p.buffs = p.buffs.filter((b) => num(b.mult) > 0 && num(b.until) > 0)
+  return p
 }
 
 export async function loadSave(): Promise<SaveData | null> {
