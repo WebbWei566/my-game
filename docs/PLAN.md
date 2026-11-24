@@ -101,7 +101,8 @@
 | `src/core/battle.ts` | 回合戰鬥（純函式） |
 | `src/core/dungeonMap.ts` | 秘境地圖產生器 |
 | `src/core/sfx.ts` | 音效 |
-| `src/stores/game.ts` | 遊戲狀態與所有動作 |
+| `src/stores/game.ts` | 遊戲狀態、修煉、突破、物品、奇遇、存檔 |
+| `src/stores/alchemy.ts`、`dungeon.ts`、`daily.ts` | 丹房／靈田、秘境戰鬥、每日的實作（由 game store 轉呼叫） |
 | `src/views/` | 修煉、功法、丹房、秘境、行囊 |
 | `src/components/` | 渡劫、火候、靈田、戰鬥、地圖、奇遇、設定、成就、開發者面板等 |
 | `tests/` | `game.test.ts`（邏輯）、`dungeon.test.ts`（秘境）、`ui.test.ts`（UI 冒煙） |
@@ -126,7 +127,7 @@
 - [ ] 依實測調整數值：前期節奏、秘境難度、丹藥掉落率
 - [ ] 查看 `npm audit` 回報的漏洞警告（開發依賴）
 - [ ] 中文字體子集化（fonttools），改為自帶字體檔，避免依賴 Google Fonts
-- [ ] `src/stores/game.ts` 已約 670 行，之後可依系統拆分（秘境、丹房各自一個模組）
+- [x] `src/stores/game.ts` 拆分：丹房、秘境、每日移到獨立模組（2026-11-25）
 - [ ] 推播通知：靈田成熟、採藥次數回滿
 - [ ] 更多內容：奇遇、秘境、功法、丹方
 - [ ] 商業化（如需要）：不影響平衡的廣告換加速、外觀道具，避免付費變強
