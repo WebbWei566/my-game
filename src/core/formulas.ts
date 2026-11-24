@@ -38,6 +38,8 @@ export function breakthroughChance(isMajor: boolean, bonus: number, rootId: stri
 
 const UNITS = ['', '萬', '億', '兆', '京', '垓', '秭', '穰', '溝', '澗', '正', '載']
 export function fmt(n: number): string {
+  // 小於 10 時保留一位小數，避免開局顯示「每秒 0」
+  if (n < 10) return (Math.floor(n * 10) / 10).toString()
   if (n < 10000) return Math.floor(n).toString()
   const i = Math.min(Math.floor(Math.log10(n) / 4), UNITS.length - 1)
   return (n / Math.pow(10000, i)).toFixed(2) + UNITS[i]

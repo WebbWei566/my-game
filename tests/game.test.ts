@@ -342,3 +342,14 @@ describe('防呆', () => {
     expect(g.p.cultivation).toBeGreaterThan(g.perSec * 5)
   })
 })
+
+describe('數字格式', () => {
+  it('fmt 小數、萬、億', async () => {
+    const { fmt } = await import('../src/core/formulas')
+    expect(fmt(0.8)).toBe('0.8')
+    expect(fmt(9.99)).toBe('9.9')
+    expect(fmt(123)).toBe('123')
+    expect(fmt(12345)).toBe('1.23萬')
+    expect(fmt(1.5e8)).toBe('1.50億')
+  })
+})
