@@ -49,6 +49,8 @@ export const useGame = defineStore('game', {
     toasts: [] as { id: number; icon: string; text: string }[],
     /** 開發者面板：時間流速倍率 */
     devSpeed: 1,
+    /** PWA 有新版本時，由 main.ts 設定為「存檔並更新」的函式 */
+    updateReady: null as null | (() => Promise<void>),
   }),
 
   getters: {

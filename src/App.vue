@@ -56,6 +56,9 @@ const showAch = ref(false)
     <AchievementsPanel v-if="showAch" @close="showAch = false" />
     <InstallPrompt />
     <ToastHost />
+    <button v-if="g.updateReady && !g.tribulation && !g.p.run?.battle" class="update" @click="g.updateReady()">
+      ✨ 新版本可用，點此更新
+    </button>
   </div>
 </template>
 
@@ -69,5 +72,8 @@ const showAch = ref(false)
 header { display: flex; justify-content: space-between; align-items: center; }
 .realm { font-size: 28px; font-family: var(--brush); letter-spacing: .1em; }
 .sub { font-size: 13px; opacity: .7; }
+.update { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(72px + env(safe-area-inset-bottom)); z-index: 20;
+  font: inherit; font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--gold);
+  background: var(--ink); color: var(--paper); box-shadow: 0 4px 12px #0004; white-space: nowrap; }
 .icon { font-size: 22px; background: none; border: none; color: inherit; padding: 8px; }
 </style>
