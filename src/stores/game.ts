@@ -438,7 +438,12 @@ export const useGame = defineStore('game', {
         const rate = BALANCE.offlineRate + (this.tech.offline ?? 0)
         const before = this.p.cultivation
         this.gain(sec * this.perSec * rate)
-        this.addLog(`閉關 ${fmtDuration(sec)}，獲得修為 ${fmt(this.p.cultivation - before)}。`, 'good')
+        const msg = `閉關 ${fmtDuration(sec)}，獲得修為 ${fmt(this.p.cultivation - before)}。`
+        this.addLog(msg, 'good')
+        if (sec >= 300) {
+          const ready = this.p.plots.filter((x) => x && x.readyAt <= now).length
+          this.toast(msg + (ready ? `靈田有 ${ready} 格已成熟。` : ''), '🧘', 5000)
+        }
       }
       this.p.lastSaved = now
       lastTick = now
