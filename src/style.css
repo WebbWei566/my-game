@@ -29,3 +29,17 @@ html, body { margin: 0; background: var(--paper); color: var(--ink);
 .card { background: var(--paper); color: var(--ink); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px;
   border: 1px solid var(--gold); box-shadow: 0 10px 40px #0006; }
 .card h3 { margin-top: 0; font-family: var(--brush); font-size: 22px; }
+
+/* 共用：頁面標題、清單列、標籤 */
+.title { font-family: var(--brush); font-size: 28px; margin: 0; letter-spacing: .1em; }
+h3 { font-size: 15px; margin: 16px 0 6px; opacity: .7; }
+.empty { opacity: .6; text-align: center; margin-top: 40px; }
+.row { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.row .info { flex: 1; min-width: 0; }
+.row small { opacity: .7; font-size: 12px; display: block; margin-top: 2px; }
+.btn.sm { padding: 6px 12px; font-size: 14px; border-radius: 8px; white-space: nowrap; }
+.chip { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line);
+  background: transparent; color: var(--ink); }
+.chip.on { border-color: var(--cinnabar); color: var(--cinnabar); }
+.r { display: inline-block; font-size: 11px; padding: 0 5px; margin-right: 6px; border-radius: 4px; border: 1px solid currentColor; vertical-align: 1px; }
+.r1 { color: #8a8578; } .r2 { color: var(--jade); } .r3 { color: #4a6fc1; } .r4 { color: #9b4dca; } .r5 { color: var(--gold); }

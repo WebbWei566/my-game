@@ -12,7 +12,9 @@ export const BALANCE = {
   offlineRate: 0.5,
   minorBreakChance: 0.9,
   majorBreakChance: 0.55,
-  pillBonus: 0.2,
+  /** 採藥：幾秒回復一次機會、最多累積幾次 */
+  gatherSec: 300,
+  gatherMax: 5,
   failLossPct: 0.3,
   /** 平均幾秒觸發一次奇遇 */
   eventIntervalSec: 90,
@@ -26,10 +28,11 @@ export const requiredFor = (stage: number) =>
 export const gainPerSec = (stage: number, rootSpeed: number) =>
   BALANCE.baseGain * Math.pow(BALANCE.gainGrowth, stage) * rootSpeed
 
-export function breakthroughChance(isMajor: boolean, usePill: boolean, rootId: string) {
+/** 突破基礎成功率；bonus 為丹藥、功法等加成總和 */
+export function breakthroughChance(isMajor: boolean, bonus: number, rootId: string) {
   let c = isMajor ? BALANCE.majorBreakChance : BALANCE.minorBreakChance
   if (isMajor && rootId === 'thunder') c += 0.15
-  if (usePill) c += BALANCE.pillBonus
+  c += bonus
   return Math.min(c, 0.98)
 }
 

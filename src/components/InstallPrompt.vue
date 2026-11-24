@@ -48,7 +48,7 @@ async function install() {
 
 <style scoped>
 .install {
-  position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+  position: fixed; right: 12px; bottom: calc(72px + env(safe-area-inset-bottom));
   z-index: 20; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--gold);
   background: var(--ink); color: var(--paper); font: inherit; box-shadow: 0 4px 12px #0004;
 }

@@ -2,7 +2,10 @@
 export interface EventEffect {
   /** 依當前境界所需修為的比例增減，例如 0.2 = +20% */
   cultivationPct?: number
-  pills?: number
+  /** 獲得物品 { itemId: 數量 } */
+  items?: Record<string, number>
+  /** 獲得功法 id */
+  technique?: string
   text: string
 }
 
@@ -45,7 +48,7 @@ export const EVENTS: GameEvent[] = [
       {
         label: '裝瓶帶走煉丹',
         chance: 0.8,
-        success: { pills: 1, text: '你以靈泉之水煉成一枚破境丹。' },
+        success: { items: { pill_break: 1 }, text: '你以靈泉之水煉成一枚破境丹。' },
         fail: { text: '靈泉離地即散，你只裝到一瓶普通的水。' },
       },
     ],
@@ -58,7 +61,7 @@ export const EVENTS: GameEvent[] = [
       {
         label: '強破禁制',
         chance: 0.5,
-        success: { cultivationPct: 0.5, pills: 1, text: '禁制應聲而碎，洞中留有前輩手札與丹藥！' },
+        success: { cultivationPct: 0.5, items: { pill_break: 1 }, text: '禁制應聲而碎，洞中留有前輩手札與丹藥！' },
         fail: { cultivationPct: -0.2, text: '禁制反噬，你受了內傷。' },
       },
       { label: '叩首三拜後離開', success: { cultivationPct: 0.05, text: '你心生敬意，道心更加澄明。' } },

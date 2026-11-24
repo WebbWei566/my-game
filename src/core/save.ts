@@ -1,36 +1,34 @@
 import { get, set, del } from 'idb-keyval'
+import { normalize, type PlayerState } from './player'
 
-export const SAVE_VERSION = 1
+export const SAVE_VERSION = 2
 const KEY = 'wendao-save'
 
-export interface SaveData {
-  version: number
-  rootId: string
-  stage: number
-  cultivation: number
-  pills: number
-  lastSaved: number
-  createdAt: number
-}
+export type SaveData = PlayerState & { version: number }
 
-/** 存檔版本遷移：之後改結構時在這裡加 case */
-function migrate(raw: any): SaveData | null {
-  if (!raw || typeof raw !== 'object') return null
-  // if (raw.version === 1) { raw = { ...raw, newField: 0, version: 2 } }
-  if (raw.version !== SAVE_VERSION) return null
-  return raw as SaveData
+/** 存檔版本遷移：結構「改名／改型別」時在這裡加步驟；單純新增欄位交給 normalize */
+export function migrate(raw: any): SaveData | null {
+  if (!raw || typeof raw !== 'object' || typeof raw.version !== 'number') return null
+  let d = { ...raw }
+  if (d.version === 1) {
+    // v1 → v2：pills 數量改放進背包
+    d.inventory = { pill_break: d.pills ?? 0 }
+    delete d.pills
+    d.version = 2
+  }
+  if (d.version !== SAVE_VERSION) return null
+  return { ...normalize(d), version: SAVE_VERSION }
 }
 
 export async function loadSave(): Promise<SaveData | null> {
   try {
-    return migrate(await get(KEY))
+    const v = await get(KEY)
+    if (v) return migrate(v)
+  } catch { /* IndexedDB 不可用 */ }
+  try {
+    return migrate(JSON.parse(localStorage.getItem(KEY) ?? 'null'))
   } catch {
-    // IndexedDB 不可用時（例如部分隱私模式）退回 localStorage
-    try {
-      return migrate(JSON.parse(localStorage.getItem(KEY) ?? 'null'))
-    } catch {
-      return null
-    }
+    return null
   }
 }
 
